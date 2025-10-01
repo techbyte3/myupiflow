@@ -1,111 +1,56 @@
 workflows:
   myupiflow-android:
-    name: myupiflow Android Build (AAB + APK) - JDK17
-    max_build_duration: 120
+    name: myupiflow Android only (AAB + APK)
+    max_build_duration: 90
     environment:
       vars:
         FLUTTER_CHANNEL: stable
         FLUTTER_VERSION: "3.35.3"
-        # Optional secure env vars (set these in Codemagic App Settings → Environment variables)
-        # KEYSTORE_BASE64: (base64 encoded upload-keystore.jks)
-        # KEYSTORE_PASSWORD: (keystore password)
-        # KEY_ALIAS: (key alias)
-        # KEY_PASSWORD: (key password)
-        # ANDROID_SDK_PLATFORMS: "platforms;android-34"  # override if needed
+        # Secure vars to set in Codemagic UI if signing:
+        # KEYSTORE_BASE64, KEYSTORE_PASSWORD, KEY_ALIAS, KEY_PASSWORD
     scripts:
-      - name: Debug environment (start)
-        script: |
-          echo "=== Initial environment ====="
-          uname -a || true
-          echo "User: $(whoami)"
-          java -version || true
-          javac -version || true
-          flutter --version || true
-          echo "Gradle wrapper:"
-          sed -n '1,240p' android/gradle/wrapper/gradle-wrapper.properties || true
-          echo "=== end initial env ====="
-
       - name: Install OpenJDK 17
         script: |
           sudo apt-get update -y
           sudo apt-get install -y openjdk-17-jdk-headless
           export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
           export PATH=$JAVA_HOME/bin:$PATH
-          echo "JAVA_HOME set to $JAVA_HOME"
           java -version
-          javac -version
 
-      - name: Ensure Android SDK components (platform-tools, platforms, build-tools)
-        script: |
-          # Make sure sdkmanager exists (Codemagic images usually provide it)
-          # Install common required SDK components. Adjust ANDROID_SDK_PLATFORMS if you need a different API.
-          export ANDROID_SDK_ROOT=${ANDROID_SDK_ROOT:-/opt/android-sdk}
-          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
-          mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools" "$ANDROID_SDK_ROOT/licenses" || true
-          # Some images already have sdkmanager; this ensures it's available. If not, the following may still work.
-          yes | sdkmanager --licenses || true
-          sdkmanager "platform-tools" "build-tools;34.0.0" "platforms;android-34" || true
-          sdkmanager --list || true
-          echo "Installed SDK packages."
-
-      - name: Setup Flutter (channel & version)
-        script: |
-          # Ensure the desired channel/version is used
-          flutter channel $FLUTTER_CHANNEL
-          flutter upgrade
-          flutter --version
-
-      - name: Decode and write keystore (if provided)
+      - name: Setup keystore (optional)
         script: |
           if [ ! -z "$KEYSTORE_BASE64" ]; then
-            echo "Decoding keystore..."
             mkdir -p android/app
             echo "$KEYSTORE_BASE64" | base64 --decode > android/app/upload-keystore.jks
-            # Safely write key.properties using printf to avoid multi-line YAML parsing issues
             printf '%s\n' "storePassword=$KEYSTORE_PASSWORD" \
                           "keyPassword=$KEY_PASSWORD" \
                           "keyAlias=$KEY_ALIAS" \
                           "storeFile=$(pwd)/android/app/upload-keystore.jks" \
             > android/key.properties
-            echo "Wrote android/key.properties:"
-            sed -n '1,80p' android/key.properties || true
-          else
-            echo "No KEYSTORE_BASE64 provided; APK/AAB will be unsigned."
           fi
 
-      - name: flutter pub get
+      - name: Dependencies
         script: |
+          flutter channel $FLUTTER_CHANNEL
+          flutter upgrade
           flutter pub get
 
-      - name: Accept Android licenses (again, just in case)
+      - name: Accept licenses
         script: |
           yes | flutter doctor --android-licenses || true
 
-      - name: Build Android App Bundle (AAB) - release (recommended for Play Store)
+      - name: Build AAB
         script: |
           export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
           export PATH=$JAVA_HOME/bin:$PATH
-          echo "Building AAB with JAVA_HOME=$JAVA_HOME"
           flutter clean
-          # Build app bundle; keep shrink disabled if you have minify issues (use --no-shrink)
           flutter build appbundle --release --no-shrink -v
 
-      - name: Build Android APK (universal) - release (diagnostic + distribution)
+      - name: Build universal APK
         script: |
           export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
           export PATH=$JAVA_HOME/bin:$PATH
-          echo "Building universal APK with JAVA_HOME=$JAVA_HOME"
-          # Build a single universal APK (no split) to simplify installs
           flutter build apk --release --no-shrink -v
-
-      - name: Final environment debug (versions & files)
-        script: |
-          echo "=== Final debug ==="
-          java -version || true
-          flutter --version || true
-          echo "Artifacts folder listing:"
-          ls -la build/app/outputs || true
-          echo "=== End final debug ==="
 
     artifacts:
       - build/app/outputs/bundle/release/*.aab

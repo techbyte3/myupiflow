@@ -1,22 +1,34 @@
 workflows:
   myupiflow-android:
-    name: myupiflow Android APK Build
-    max_build_duration: 60
+    name: myupiflow Android APK Build (JDK17)
+    max_build_duration: 90
     environment:
       vars:
         FLUTTER_CHANNEL: stable
         FLUTTER_VERSION: "3.35.3"
-        # Secrets (set as secure env vars in Codemagic UI):
-        # KEYSTORE_BASE64
-        # KEYSTORE_PASSWORD
-        # KEY_ALIAS
-        # KEY_PASSWORD
+        # Secure variables to set in Codemagic UI if you want a signed APK:
+        # KEYSTORE_BASE64, KEYSTORE_PASSWORD, KEY_ALIAS, KEY_PASSWORD
     scripts:
-      - name: Set up Flutter
+      - name: Debug environment (before changes)
         script: |
-          flutter channel $FLUTTER_CHANNEL
-          flutter upgrade
-          flutter --version
+          echo "=== Initial environment ==="
+          uname -a || true
+          java -version || true
+          javac -version || true
+          flutter --version || true
+          echo "Gradle wrapper properties:"
+          sed -n '1,200p' android/gradle/wrapper/gradle-wrapper.properties || true
+          echo "=== End initial env ==="
+
+      - name: Install OpenJDK 17
+        script: |
+          sudo apt-get update -y
+          sudo apt-get install -y openjdk-17-jdk
+          export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+          export PATH=$JAVA_HOME/bin:$PATH
+          echo "JAVA_HOME set to $JAVA_HOME"
+          java -version
+          javac -version
 
       - name: Decode and set up keystore (if provided)
         script: |
@@ -24,15 +36,16 @@ workflows:
             echo "Decoding keystore..."
             mkdir -p android/app
             echo "$KEYSTORE_BASE64" | base64 --decode > android/app/upload-keystore.jks
-
-            # Write key.properties using printf to avoid YAML parsing issues
+            # Use printf to produce key.properties (avoid YAML/heredoc issues)
             printf '%s\n' "storePassword=$KEYSTORE_PASSWORD" \
                           "keyPassword=$KEY_PASSWORD" \
                           "keyAlias=$KEY_ALIAS" \
                           "storeFile=$(pwd)/android/app/upload-keystore.jks" \
             > android/key.properties
+            echo "Wrote android/key.properties:"
+            sed -n '1,120p' android/key.properties || true
           else
-            echo "No keystore provided, APK will be unsigned"
+            echo "No KEYSTORE_BASE64 provided — unsigned APK will be built"
           fi
 
       - name: Install dependencies
@@ -43,10 +56,24 @@ workflows:
         script: |
           yes | flutter doctor --android-licenses || true
 
-      - name: Build APK (release split per ABI)
+      - name: Debug environment (before build)
         script: |
+          echo "=== Env before build ==="
+          echo "JAVA_HOME=$JAVA_HOME"
+          java -version
+          flutter --version
+          echo "Android SDK root: $ANDROID_SDK_ROOT"
+          sdkmanager --list || true
+          echo "=== End env debug ==="
+
+      - name: Build APK (release split per ABI) - verbose
+        script: |
+          export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+          export PATH=$JAVA_HOME/bin:$PATH
+          echo "Using JAVA_HOME=$JAVA_HOME"
           flutter clean
-          flutter build apk --release --split-per-abi
+          # verbose to capture stacktrace
+          flutter build apk --release --split-per-abi -v
 
     artifacts:
       - build/app/outputs/flutter-apk/*.apk

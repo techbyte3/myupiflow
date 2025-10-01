@@ -1,0 +1,49 @@
+workflows:
+  myupiflow-android:
+    name: myupiflow Android APK Build
+    max_build_duration: 60
+    environment:
+      vars:
+        FLUTTER_CHANNEL: stable
+        FLUTTER_VERSION: 3.35.3
+        # Keystore-related secrets (set these in Codemagic UI as secure variables)
+        # KEYSTORE_BASE64: base64-encoded .jks file
+        # KEYSTORE_PASSWORD: your keystore password
+        # KEY_ALIAS: your key alias
+        # KEY_PASSWORD: your key password
+    scripts:
+      - name: Set up Flutter
+        script: |
+          flutter channel $FLUTTER_CHANNEL
+          flutter upgrade
+          flutter --version
+
+      - name: Decode and set up keystore (if provided)
+        script: |
+          if [ ! -z "$KEYSTORE_BASE64" ]; then
+            echo "Decoding keystore..."
+            mkdir -p android/app
+            echo "$KEYSTORE_BASE64" | base64 --decode > android/app/upload-keystore.jks
+            cat > android/key.properties <<EOF
+storePassword=$KEYSTORE_PASSWORD
+keyPassword=$KEY_PASSWORD
+keyAlias=$KEY_ALIAS
+storeFile=$(pwd)/android/app/upload-keystore.jks
+EOF
+          else
+            echo "No keystore provided, APK will be unsigned"
+          fi
+
+      - name: Install dependencies
+        script: flutter pub get
+
+      - name: Accept Android licenses
+        script: yes | flutter doctor --android-licenses || true
+
+      - name: Build APK (release split per ABI)
+        script: |
+          flutter clean
+          flutter build apk --release --split-per-abi
+
+    artifacts:
+      - build/app/outputs/flutter-apk/*.apk

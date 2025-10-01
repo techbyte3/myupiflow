@@ -3,15 +3,15 @@
   "packages": [
     {
       "name": "_fe_analyzer_shared",
-      "rootUri": "file:///C:/Users/LENOVO/AppData/Local/Pub/Cache/hosted/pub.dev/_fe_analyzer_shared-85.0.0",
+      "rootUri": "file:///C:/Users/LENOVO/AppData/Local/Pub/Cache/hosted/pub.dev/_fe_analyzer_shared-89.0.0",
       "packageUri": "lib/",
-      "languageVersion": "3.5"
+      "languageVersion": "3.9"
     },
     {
       "name": "analyzer",
-      "rootUri": "file:///C:/Users/LENOVO/AppData/Local/Pub/Cache/hosted/pub.dev/analyzer-7.7.1",
+      "rootUri": "file:///C:/Users/LENOVO/AppData/Local/Pub/Cache/hosted/pub.dev/analyzer-8.2.0",
       "packageUri": "lib/",
-      "languageVersion": "3.5"
+      "languageVersion": "3.9"
     },
     {
       "name": "archive",
@@ -39,7 +39,7 @@
     },
     {
       "name": "build",
-      "rootUri": "file:///C:/Users/LENOVO/AppData/Local/Pub/Cache/hosted/pub.dev/build-3.1.0",
+      "rootUri": "file:///C:/Users/LENOVO/AppData/Local/Pub/Cache/hosted/pub.dev/build-4.0.0",
       "packageUri": "lib/",
       "languageVersion": "3.7"
     },
@@ -56,20 +56,8 @@
       "languageVersion": "3.6"
     },
     {
-      "name": "build_resolvers",
-      "rootUri": "file:///C:/Users/LENOVO/AppData/Local/Pub/Cache/hosted/pub.dev/build_resolvers-3.0.3",
-      "packageUri": "lib/",
-      "languageVersion": "3.7"
-    },
-    {
       "name": "build_runner",
-      "rootUri": "file:///C:/Users/LENOVO/AppData/Local/Pub/Cache/hosted/pub.dev/build_runner-2.7.1",
-      "packageUri": "lib/",
-      "languageVersion": "3.7"
-    },
-    {
-      "name": "build_runner_core",
-      "rootUri": "file:///C:/Users/LENOVO/AppData/Local/Pub/Cache/hosted/pub.dev/build_runner_core-9.3.1",
+      "rootUri": "file:///C:/Users/LENOVO/AppData/Local/Pub/Cache/hosted/pub.dev/build_runner-2.8.0",
       "packageUri": "lib/",
       "languageVersion": "3.7"
     },
@@ -147,7 +135,7 @@
     },
     {
       "name": "dart_style",
-      "rootUri": "file:///C:/Users/LENOVO/AppData/Local/Pub/Cache/hosted/pub.dev/dart_style-3.1.1",
+      "rootUri": "file:///C:/Users/LENOVO/AppData/Local/Pub/Cache/hosted/pub.dev/dart_style-3.1.2",
       "packageUri": "lib/",
       "languageVersion": "3.7"
     },
@@ -387,9 +375,9 @@
     },
     {
       "name": "local_auth_platform_interface",
-      "rootUri": "file:///C:/Users/LENOVO/AppData/Local/Pub/Cache/hosted/pub.dev/local_auth_platform_interface-1.0.10",
+      "rootUri": "file:///C:/Users/LENOVO/AppData/Local/Pub/Cache/hosted/pub.dev/local_auth_platform_interface-1.1.0",
       "packageUri": "lib/",
-      "languageVersion": "3.0"
+      "languageVersion": "3.7"
     },
     {
       "name": "local_auth_windows",
@@ -627,7 +615,7 @@
     },
     {
       "name": "source_gen",
-      "rootUri": "file:///C:/Users/LENOVO/AppData/Local/Pub/Cache/hosted/pub.dev/source_gen-4.0.0",
+      "rootUri": "file:///C:/Users/LENOVO/AppData/Local/Pub/Cache/hosted/pub.dev/source_gen-4.0.1",
       "packageUri": "lib/",
       "languageVersion": "3.7"
     },
@@ -696,12 +684,6 @@
       "rootUri": "file:///C:/Users/LENOVO/AppData/Local/Pub/Cache/hosted/pub.dev/test_api-0.7.6",
       "packageUri": "lib/",
       "languageVersion": "3.5"
-    },
-    {
-      "name": "timing",
-      "rootUri": "file:///C:/Users/LENOVO/AppData/Local/Pub/Cache/hosted/pub.dev/timing-1.0.2",
-      "packageUri": "lib/",
-      "languageVersion": "3.4"
     },
     {
       "name": "typed_data",

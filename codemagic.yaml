@@ -6,7 +6,7 @@ workflows:
       vars:
         FLUTTER_CHANNEL: stable
         FLUTTER_VERSION: "3.35.3"
-        # Secrets are set in Codemagic UI
+        # Secrets (set as secure env vars in Codemagic UI):
         # KEYSTORE_BASE64
         # KEYSTORE_PASSWORD
         # KEY_ALIAS
@@ -25,14 +25,12 @@ workflows:
             mkdir -p android/app
             echo "$KEYSTORE_BASE64" | base64 --decode > android/app/upload-keystore.jks
 
-            # Write key.properties safely
-            cat <<'EOF' > android/key.properties
-storePassword=$KEYSTORE_PASSWORD
-keyPassword=$KEY_PASSWORD
-keyAlias=$KEY_ALIAS
-storeFile=$(pwd)/android/app/upload-keystore.jks
-EOF
-
+            # Write key.properties using printf to avoid YAML parsing issues
+            printf '%s\n' "storePassword=$KEYSTORE_PASSWORD" \
+                          "keyPassword=$KEY_PASSWORD" \
+                          "keyAlias=$KEY_ALIAS" \
+                          "storeFile=$(pwd)/android/app/upload-keystore.jks" \
+            > android/key.properties
           else
             echo "No keystore provided, APK will be unsigned"
           fi
